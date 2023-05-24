@@ -1,5 +1,5 @@
 import json
-from common_config import *
+from main import *
 import random
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
@@ -20,8 +20,24 @@ def my_collate(batch):
     filename = [item[5] for item in batch]
 
     return [tokens, ne_tags, relation_pairs, embeddings, ner_tags_numeric, filename]
+
+def my_collate_CLDR_CLNER(batch):
+    '''
+      Custom collate function for the dataloader in
+      order to handle the case where the data instances
+      have different sizes (no padding).
+    '''
+    tokens = [item[0] for item in batch]
+    ne_tags = [item[1] for item in batch]
+    relation_pairs = [item[2] for item in batch]
+    embeddings_NER = [item[3] for item in batch]
+    embeddings_RE = [item[4] for item in batch]
+    ner_tags_numeric = [item[5] for item in batch]
+    filename = [item[6] for item in batch]
+
+    return [tokens, ne_tags, relation_pairs, embeddings_NER, embeddings_RE, ner_tags_numeric, filename]
 	
-def prepare_dataloaders(split_num = 1):
+def prepare_dataloaders(lang_model, split_num = 1):
     ### Read the file with the CV splits
     with open(ADE_SPLITS_PATH) as json_file:
         cv_splits = json.load(json_file)
@@ -57,31 +73,60 @@ def prepare_dataloaders(split_num = 1):
         else:
             train_files.append(f)
 
-    ### Define the data sets objects
-    dataset_train = ADE_Dataset(filenames = train_files,
-                                processed_data_path = PROCESSED_DATA_PATH,
-                                folder_path = lang_model + '/')
-    dataset_valid = ADE_Dataset(filenames = valid_files,
-                                processed_data_path = PROCESSED_DATA_PATH,
-                                folder_path = lang_model + '/')
-    dataset_test = ADE_Dataset(filenames = test_files,
-                               processed_data_path = PROCESSED_DATA_PATH,
-                               folder_path = lang_model + '/')
-    
-    ### Create the dataloaders
-    dataloader_train = DataLoader(dataset_train,
-                                  batch_size = hyperparameters['batch_size'],
-                                  shuffle = False,
-                                  collate_fn = my_collate)
+    if lang_model != 'CLDR_CLNER':
+        ### Define the data sets objects
+        dataset_train = ADE_Dataset(filenames = train_files,
+                                    processed_data_path = PROCESSED_DATA_PATH,
+                                    folder_path = lang_model + '/')
+        dataset_valid = ADE_Dataset(filenames = valid_files,
+                                    processed_data_path = PROCESSED_DATA_PATH,
+                                    folder_path = lang_model + '/')
+        dataset_test = ADE_Dataset(filenames = test_files,
+                                   processed_data_path = PROCESSED_DATA_PATH,
+                                   folder_path = lang_model + '/')
+        
+         ### Create the dataloaders
+        dataloader_train = DataLoader(dataset_train,
+                                      batch_size = hyperparameters['batch_size'],
+                                      shuffle = False,
+                                      collate_fn = my_collate)
 
-    dataloader_valid = DataLoader(dataset_valid,
-                                  batch_size = hyperparameters['batch_size'],
-                                  shuffle = False,
-                                  collate_fn = my_collate)
+        dataloader_valid = DataLoader(dataset_valid,
+                                      batch_size = hyperparameters['batch_size'],
+                                      shuffle = False,
+                                      collate_fn = my_collate)
+        
+        dataloader_test = DataLoader(dataset_valid,
+                                     batch_size = hyperparameters['batch_size'],
+                                     shuffle = False,
+                                     collate_fn = my_collate)
     
-    dataloader_test = DataLoader(dataset_valid,
-                                 batch_size = hyperparameters['batch_size'],
-                                 shuffle = False,
-                                 collate_fn = my_collate)
+    else:
+        ### Define the data sets objects
+        dataset_train = ADE_Dataset_CLDR_CLNER(filenames = train_files,
+                                               processed_data_path = PROCESSED_DATA_PATH,
+                                               folder_path = lang_model + '/split_' + str(split_num) + '/')
+        dataset_valid = ADE_Dataset_CLDR_CLNER(filenames = valid_files,
+                                               processed_data_path = PROCESSED_DATA_PATH,
+                                               folder_path = lang_model + '/split_' + str(split_num) + '/')
+        dataset_test = ADE_Dataset_CLDR_CLNER(filenames = test_files,
+                                              processed_data_path = PROCESSED_DATA_PATH,
+                                              folder_path = lang_model + '/split_' + str(split_num) + '/')
+    
+        ### Create the dataloaders
+        dataloader_train = DataLoader(dataset_train,
+                                      batch_size = hyperparameters['batch_size'],
+                                      shuffle = False,
+                                      collate_fn = my_collate_CLDR_CLNER)
+
+        dataloader_valid = DataLoader(dataset_valid,
+                                      batch_size = hyperparameters['batch_size'],
+                                      shuffle = False,
+                                      collate_fn = my_collate_CLDR_CLNER)
+        
+        dataloader_test = DataLoader(dataset_valid,
+                                     batch_size = hyperparameters['batch_size'],
+                                     shuffle = False,
+                                     collate_fn = my_collate_CLDR_CLNER)
 
     return dataloader_train, dataloader_valid, dataloader_test

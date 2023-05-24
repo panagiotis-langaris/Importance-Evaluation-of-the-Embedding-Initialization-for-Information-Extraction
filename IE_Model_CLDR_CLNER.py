@@ -6,9 +6,9 @@ import helper_functions.biaffine_classifier as biaffine_classifier # Source: htt
 from common_config import *
 from helper_functions.prepare_inputs import *
 
-class IE_Model(nn.Module):
+class IE_Model_CLDR_CLNER(nn.Module):
     def __init__(self, device, bilstm_input_size, bilstm_hidden_size, dropout_prob_ner, dropout_prob_rc):
-        super(IE_Model, self).__init__()
+        super(IE_Model_CLDR_CLNER, self).__init__()
 
         self.device = device
 
@@ -59,12 +59,14 @@ class IE_Model(nn.Module):
         ### ------------------ END OF RC TASK -------------------
         #---------------------------------------------------------
 
-    def forward(self, word_embeddings):
+    def forward(self, word_embeddings_NER, word_embeddings_RE):
   
         ### ------------------ START OF NER TASK ------------------
         # Pass the emdeddings through the BiLSTM
-        word_embeddings = word_embeddings.to(self.device)
-        bilstm_output = self.ner_bilstm_model(word_embeddings)
+        word_embeddings_NER = word_embeddings_NER.to(self.device)
+        word_embeddings_RE = word_embeddings_RE.to(self.device)
+        
+        bilstm_output = self.ner_bilstm_model(word_embeddings_NER)
 
         # Pass the BiLSTM output from the Dropout layer
         tmp_output = self.dropout_layer_ner(bilstm_output[0])   
@@ -91,7 +93,7 @@ class IE_Model(nn.Module):
         tag_n_token_embeddings, \
         drug_entity_indexes, \
         effect_entity_indexes = prepare_inputs(token_ner_tags = predicted_NER_tags,
-                                               token_embeddings = word_embeddings)
+                                               token_embeddings = word_embeddings_RE)
         
         # Pass the concatenated vector (NER tag embedding + word piece embeddings) through the RC BiLSTM
         rc_bilstm_model_output = self.rc_bilstm_model(tag_n_token_embeddings)

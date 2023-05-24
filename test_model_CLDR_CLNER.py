@@ -3,7 +3,7 @@ from main import *
 from helper_functions.get_chunks import *
 from evaluation_functions import *
 
-def test_model(model, device, mapping_ne_tags, dataloader_test):
+def test_model_CLDR_CLNER(model, device, mapping_ne_tags, dataloader_test):
 
     # Call model. eval() to set dropout and batch normalization layers to evaluation mode before running inference.
     # Failing to do this will yield inconsistent inference results.
@@ -22,24 +22,28 @@ def test_model(model, device, mapping_ne_tags, dataloader_test):
     for batch in dataloader_test:
 
         # Take the inputs from the batch  
-        tokens, ne_tags, relation_pairs, embeddings, ner_tags_numeric, filename = batch
+        tokens, ne_tags, relation_pairs, embeddings_NER, embeddings_RE, ner_tags_numeric, filename = batch
 
         # Run the forward pass for the batch
-        for in1, in2, in3, in4, in5, in6 in zip(tokens,
-                                                ne_tags,
-                                                relation_pairs,
-                                                embeddings,
-                                                ner_tags_numeric,
-                                                filename):
+        for in1, in2, in3, in4, in5, in6, in7 in zip(tokens,
+                                                     ne_tags,
+                                                     relation_pairs,
+                                                     embeddings_NER,
+                                                     embeddings_RE,
+                                                     ner_tags_numeric,
+                                                     filename):
 
             # Place the inputs in the selected device (GPU or CPU)
             in4 = torch.tensor(in4, dtype=torch.float32)
             in4 = in4.to(device)
+            in5 = torch.tensor(in5, dtype=torch.float32)
+            in5 = in5.to(device)
 
             # Pass the embeddings through the Information Extraction Model
             ner_model_output, \
             all_potential_pairs, \
-            all_potential_pairs_probabilities = model(word_embeddings = in4)
+            all_potential_pairs_probabilities = model(word_embeddings_NER = in4,
+                                                      word_embeddings_RE = in4) # Changed to in4 instead of in5 to test only CLNER embeddings
                         
             ### --------------  NER Task Predictions --------------
             # Predict the most likely tag sequence for the given output of the NER BiLSTM using the Viterbi algorithm
@@ -49,7 +53,7 @@ def test_model(model, device, mapping_ne_tags, dataloader_test):
             predicted_NER_tags = predicted_NER_tags.to(device)
 
             # Evaluate the NER tags' predictions
-            gold_seq = in5
+            gold_seq = in6
             gold_chunks = get_chunks(gold_seq, mapping_ne_tags)
 
             predicted_seq = predicted_NER_tags.tolist()

@@ -6,7 +6,7 @@ from main import *
 from helper_functions.create_input_target_tensors import *
 import os
 
-def train_model(device, lang_model, k_fold, hyperparameters, model, optimizer, scheduler, rc_loss_probab, dataloader_train, dataloader_valid):
+def train_model_CLDR_CLNER(device, lang_model, k_fold, hyperparameters, model, optimizer, scheduler, rc_loss_probab, dataloader_train, dataloader_valid):
 
     acc_training_loss_cmb = []
     acc_training_loss_ner = []
@@ -46,7 +46,7 @@ def train_model(device, lang_model, k_fold, hyperparameters, model, optimizer, s
         for batch in dataloader_train:
 
             # Take the inputs from the batch  
-            tokens, ne_tags, relation_pairs, embeddings, ner_tags_numeric, filename = batch
+            tokens, ne_tags, relation_pairs, embeddings_NER, embeddings_RE, ner_tags_numeric, filename = batch
 
             # Initialize batch's NER loss
             ner_loss_batch = 0.0
@@ -55,26 +55,30 @@ def train_model(device, lang_model, k_fold, hyperparameters, model, optimizer, s
             rc_criterion_target_batch = torch.tensor([], dtype=torch.float32, device='cuda')
 
             # Run the forward pass for the batch
-            for in1, in2, in3, in4, in5, in6 in zip(tokens,
-                                                    ne_tags,
-                                                    relation_pairs,
-                                                    embeddings,
-                                                    ner_tags_numeric,
-                                                    filename):
+            for in1, in2, in3, in4, in5, in6, in7 in zip(tokens,
+                                                         ne_tags,
+                                                         relation_pairs,
+                                                         embeddings_NER,
+                                                         embeddings_RE,
+                                                         ner_tags_numeric,
+                                                         filename):
 
                 # Place the inputs in the selected device (GPU or CPU)
                 in4 = torch.tensor(in4, dtype=torch.float32)
                 in4 = in4.to(device)
                 in5 = torch.tensor(in5, dtype=torch.long)
                 in5 = in5.to(device)
+                in6 = torch.tensor(in6, dtype=torch.long)
+                in6 = in6.to(device)
 
                 # Pass the embeddings through the Information Extraction Model
                 ner_model_output, \
                 all_potential_pairs, \
-                all_potential_pairs_probabilities = model(word_embeddings = in4)
+                all_potential_pairs_probabilities = model(word_embeddings_NER = in4,
+                                                          word_embeddings_RE = in4) # Changed to in4 instead of in5 to test only CLNER embeddings
                 
                 # Prepare gold BIO tags for CRF model 
-                crf_gold_tags = in5.unsqueeze_(0)
+                crf_gold_tags = in6.unsqueeze_(0)
                 crf_gold_tags = crf_gold_tags.permute(1,0)
                 # Calculate NER loss using the CRF model
                 log_likelihood = model.crf_model(ner_model_output, crf_gold_tags)
@@ -155,7 +159,7 @@ def train_model(device, lang_model, k_fold, hyperparameters, model, optimizer, s
         with torch.no_grad():
             for batch in dataloader_valid:
                 # Take the inputs from the batch  
-                tokens, ne_tags, relation_pairs, embeddings, ner_tags_numeric, filename = batch
+                tokens, ne_tags, relation_pairs, embeddings_NER, embeddings_RE, ner_tags_numeric, filename = batch
 
                 # Initialize batch's NER loss
                 val_ner_loss_batch = 0.0 # batch_negative_log_likelihood_val = 0.0
@@ -165,27 +169,31 @@ def train_model(device, lang_model, k_fold, hyperparameters, model, optimizer, s
                 rc_criterion_target_batch = torch.tensor([], dtype=torch.float32, device='cuda')
 
                 # Run the forward pass for the batch
-                for in1, in2, in3, in4, in5, in6 in zip(tokens,
-                                                        ne_tags,
-                                                        relation_pairs,
-                                                        embeddings,
-                                                        ner_tags_numeric,
-                                                        filename):
+                for in1, in2, in3, in4, in5, in6, in7 in zip(tokens,
+                                                             ne_tags,
+                                                             relation_pairs,
+                                                             embeddings_NER,
+                                                             embeddings_RE,
+                                                             ner_tags_numeric,
+                                                             filename):
 
                     # Place the inputs in the selected device (GPU or CPU)
                     in4 = torch.tensor(in4, dtype=torch.float32)
                     in4 = in4.to(device)
                     in5 = torch.tensor(in5, dtype=torch.long)
                     in5 = in5.to(device)
+                    in6 = torch.tensor(in6, dtype=torch.long)
+                    in6 = in6.to(device)
 
                     
                     # Pass the embeddings through the Information Extraction Model
                     ner_model_output, \
                     all_potential_pairs, \
-                    all_potential_pairs_probabilities = model(word_embeddings = in4)
+                    all_potential_pairs_probabilities = model(word_embeddings_NER = in4,
+                                                              word_embeddings_RE = in4) # Changed to in4 instead of in5 to test only CLNER embeddings
                     
                     # Prepare gold BIO tags for CRF model
-                    crf_gold_tags = in5.unsqueeze_(0)
+                    crf_gold_tags = in6.unsqueeze_(0)
                     crf_gold_tags = crf_gold_tags.permute(1,0)
                     # Calculate NER loss using the CRF model
                     log_likelihood = model.crf_model(ner_model_output, crf_gold_tags)
