@@ -23,9 +23,8 @@ embeddings initialization strategies and compare the performance of the differen
 variations. Gain insights into the properties that word embeddings should have when used
 as input in information extraction models.
 
-# Architecture of the constructed IE model
-
-![ie_model (1)](https://github.com/panagiotis1994/thesis/assets/16323614/58150bd1-54cb-4f2c-8cc2-3b177c886d18)
+# Architecture of the proposed IE model
+![ie_model (1)](https://github.com/panagiotis1994/thesis/assets/16323614/0502b297-06d5-440c-9fdb-2f880c6c437f)
 
 
 # References
