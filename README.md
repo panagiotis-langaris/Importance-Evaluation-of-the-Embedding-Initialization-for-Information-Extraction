@@ -1,5 +1,4 @@
-# Title of thesis
-Importance Evaluation of the Embedding’s Initialization for Information Extraction
+# Importance Evaluation of the Embedding’s Initialization for Information Extraction
 
 # Context
 Information Extraction (IE) is an important task of Natural Language Processing. End-to-end
