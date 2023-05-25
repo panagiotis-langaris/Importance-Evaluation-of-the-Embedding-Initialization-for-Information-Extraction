@@ -30,9 +30,10 @@ as input in information extraction models.
 
 
 # References
-1. Theodoropoulos, C., Henderson, J., Coman, A. C., & Moens, M. F. (2021). Imposing
-Relation Structure in Language-Model Embeddings Using Contrastive Learning. arXiv
-preprint arXiv:2109.00840.
+1. Christos Theodoropoulos, James Henderson, Andrei Catalin Coman, and Marie-Francine Moens. 2021. 
+Imposing Relation Structure in Language-Model Embeddings Using Contrastive Learning. 
+In Proceedings of the 25th Conference on Computational Natural Language Learning, 
+pages 337–348, Online. Association for Computational Linguistics.
 2. Taillé, B., Guigue, V., Scoutheeten, G., & Gallinari, P. (2020, November). Let’s Stop Error
 Propagation in the End-to-End Relation Extraction Literature! In Proceedings of the 2020
 Conference on Empirical Methods in Natural Language Processing (EMNLP) (pp. 3689-
