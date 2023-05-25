@@ -25,6 +25,9 @@ as input in information extraction models.
 # Architecture of the proposed IE model
 ![ie_model (1)](https://github.com/panagiotis1994/thesis/assets/16323614/0502b297-06d5-440c-9fdb-2f880c6c437f)
 
+# Results
+![total_performance](https://github.com/panagiotis1994/thesis/assets/16323614/adfde5f5-eeba-4b4b-abcd-40513f161424)
+
 
 # References
 1. Theodoropoulos, C., Henderson, J., Coman, A. C., & Moens, M. F. (2021). Imposing
