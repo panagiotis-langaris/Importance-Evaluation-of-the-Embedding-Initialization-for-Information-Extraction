@@ -96,7 +96,7 @@ def prepare_dataloaders(lang_model, split_num = 1):
                                       shuffle = False,
                                       collate_fn = my_collate)
         
-        dataloader_test = DataLoader(dataset_valid,
+        dataloader_test = DataLoader(dataset_test,
                                      batch_size = hyperparameters['batch_size'],
                                      shuffle = False,
                                      collate_fn = my_collate)
@@ -124,7 +124,7 @@ def prepare_dataloaders(lang_model, split_num = 1):
                                       shuffle = False,
                                       collate_fn = my_collate_CLDR_CLNER)
         
-        dataloader_test = DataLoader(dataset_valid,
+        dataloader_test = DataLoader(dataset_test,
                                      batch_size = hyperparameters['batch_size'],
                                      shuffle = False,
                                      collate_fn = my_collate_CLDR_CLNER)
